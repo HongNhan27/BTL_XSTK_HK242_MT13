@@ -1,3 +1,62 @@
+path <- "Intel_CPUs.csv"
+
+data <- read.csv(file = path, header = TRUE, sep = ",")
+
+df <- data[, c("Vertical_Segment", "Lithography", "nb_of_Cores", "nb_of_Threads",
+                "Processor_Base_Frequency", "TDP", "Max_Memory_Size",
+                "Max_Memory_Bandwidth", "Max_nb_of_PCI_Express_Lanes")]
+
+head(df)
+
+df$Vertical_Segment <- as.factor(df$Vertical_Segment)
+
+convert_frequency <- function(frequency) {
+   if (grepl("GHz", frequency)) {
+     return(as.numeric(gsub(" GHz", "", frequency)) * 1000)
+   } else if (grepl("MHz", frequency)) {
+     return(as.numeric(gsub(" MHz", "", frequency)))
+   } else {
+     return(as.numeric(frequency))
+   }
+ }
+
+df$Processor_Base_Frequency <- sapply(df$Processor_Base_Frequency, convert_frequency)
+
+df$TDP <- gsub(" W", "", df$TDP)     
+df$TDP <- gsub("[^0-9.]", "", df$TDP)    
+df$TDP <- as.numeric(df$TDP)
+df$Max_Memory_Size <- gsub(" GB", "", df$Max_Memory_Size)
+df$Max_Memory_Size <- as.numeric(df$Max_Memory_Size)
+
+
+df$Max_Memory_Bandwidth <- gsub(" GB/s", "", df$Max_Memory_Bandwidth)
+df$Max_Memory_Bandwidth <- as.numeric(df$Max_Memory_Bandwidth)
+df$Lithography <- gsub(" nm", "", df$Lithography)
+df$Lithography <- as.numeric(df$Lithography)
+df$nb_of_Cores <- as.numeric(df$nb_of_Cores)
+df$nb_of_Threads <- as.numeric(df$nb_of_Threads)
+df$Max_nb_of_PCI_Express_Lanes <- as.numeric(df$Max_nb_of_PCI_Express_Lanes)
+head(df)
+
+apply(is.na(df), 2, sum)
+
+apply(is.na(df), 2, mean)
+
+replace_na_with_median <- function(x) {
+   x[is.na(x)] <- median(x, na.rm = TRUE)
+   return(x)
+ }
+
+
+numeric_columns <- sapply(df, is.numeric)
+
+df[numeric_columns] <- sapply(df[numeric_columns], replace_na_with_median)
+
+df <- as.data.frame(df)
+
+apply(is.na(df), 2, sum)
+
+
 #Thong ke mo ta
 data <- read.csv("output.csv")
 
